@@ -10,6 +10,7 @@ Pm=0.001 # taux de mutation
 N=20# NOMBRE DE VILLES
 M=100 # DIMENSION DE LA POPULATION
 k=0 #compteur pour la boucle apres
+villes_dessinees = False  # Variable globale pour suivre si les villes ont été dessinées ou non
 
 
 
@@ -88,45 +89,47 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
         self.canvas = tk.Canvas(master, width=400, height=400) # zone de dessin) dans la fenêtre principale 
         self.canvas.pack() # affichons le canevas dans la fenêtre principale.
 
-        self.generate_button = tk.Button(master, text="Générer Villes", command=self.generate_cities)
+        self.generate_button = tk.Button(master, text="Générer Villes", command=self.update_population_graph)
         self.generate_button.pack()
 
-    def generate_cities(self):# bouton "Générer Villes" est cliqué
-        self.canvas.delete("all")  # Effacer toutes les anciennes villes
-
-        #num_cities = 10  # Nombre de villes à générer
-        num_cities = self.get_num_cities_from_user()  # Obtenir le nombre de villes à générer de l'utilisateur
-        for _ in range(num_cities):
-            x = rd.randint(50, 350)  # Coordonnée x aléatoire dans la plage de 50 à 350 pixels.
-            y = rd.randint(50, 350)  # Coordonnée y aléatoire
-            self.canvas.create_oval(x-5, y-5, x+5, y+5, fill="red")  # Dessiner la ville comme un cercle rouge avec un rayon 3
-
     def get_num_cities_from_user(self): # demander a l'utilisateur de donner le nombre de villes a generer 
-        num_cities = simpledialog.askinteger("Nombre de villes", "Entrez le nombre de villes à générer :", initialvalue=10)
-        return num_cities if num_cities else 10  # Retourne le nombre de villes saisi par l'utilisateur, ou 10 par défaut
+        global N
+        N = simpledialog.askinteger("Nombre de villes", "Entrez le nombre de villes à générer :", initialvalue=10)
+        return N if N else 10  # Retourne le nombre de villes saisi par l'utilisateur, ou 10 par défaut
 
-    def update_graph(self, chemin):
-            # Effacer les chemins précédents
-        self.canvas.delete("chemins")
+    def update_population_graph(self, population, index=0):
+        global villes_dessinees
+        if index < len(population):
+            chemin = population[index]
+            
+            # Supprimer les chemins et les villes précédentes
+            self.canvas.delete("chemins")
+            #self.canvas.delete("villes")
+            
+            # Dessiner les nouvelles villes uniquement lors du premier appel
+            if not villes_dessinees:
+                num_cities = self.get_num_cities_from_user()  # Obtenir le nombre de villes à générer de l'utilisateur
+                for i in range(num_cities):
+                    x_coord, y_coord = x[i]*400, y[i]*400
+                    self.canvas.create_oval(x_coord-3, y_coord-3, x_coord+3, y_coord+3, fill="red", tags="villes")
+                villes_dessinees = True  # Mettre à jour la variable de suivi
 
-        # Dessiner les chemins pour chaque individu de la population
-        for individu in population:
-            chemin = individu
-            if chemin:
-                for i in range(len(chemin) - 1):
-                    ville1 = chemin[i]
-                    ville2 = chemin[i + 1]
-                    x1, y1 = x[ville1], y[ville1]
-                    x2, y2 = x[ville2], y[ville2]
-                    self.canvas.create_line(x1, y1, x2, y2, fill="blue", width=2, tags="chemins")
-
-                # Dessiner le chemin de retour à la première ville
-                ville1 = chemin[-1]
-                ville2 = chemin[0]
-                x1, y1 = x[ville1], y[ville1]
-                x2, y2 = x[ville2], y[ville2]
+            # Dessiner le nouveau chemin pour l'individu actuel
+            for i in range(len(chemin) - 1):
+                ville1 = chemin[i]
+                ville2 = chemin[i + 1]
+                x1, y1 = x[ville1]*400, y[ville1]*400
+                x2, y2 = x[ville2]*400, y[ville2]*400
                 self.canvas.create_line(x1, y1, x2, y2, fill="blue", width=2, tags="chemins")
 
+            ville1 = chemin[-1]
+            ville2 = chemin[0]
+            x1, y1 = x[ville1]*400, y[ville1]*400
+            x2, y2 = x[ville2]*400, y[ville2]*400
+            self.canvas.create_line(x1, y1, x2, y2, fill="blue", width=2, tags="chemins")
+
+            # Appeler cette méthode avec un délai entre chaque appel
+            self.master.after(10, self.update_population_graph, population, index + 1)
 
     def check_convergence(self, fitness_population, fitness_nouvelle_population, Seuil_Amelioration):
         # Calculer la différence entre les fitness de la population actuelle et de la nouvelle population
@@ -147,7 +150,7 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
         xy=np.column_stack((x[chemin],y[chemin])) # Cette ligne crée un tableau bidimensionnel où chaque ligne représente les coordonnées (x, y) d'une ville dans l'ordre défini par le chemin actuel. La fonction np.column_stack() est utilisée pour empiler les tableaux x et y sur les colonnes, de sorte que chaque colonne contienne les coordonnées (x, y) d'une ville.
         distance=np.sum(np.sqrt(np.sum((xy- np.roll(xy,-1,axis=0))**2,axis=1))) # alcule la distance totale parcourue en suivant le chemin défini par les indices de la variable chemin. Elle utilise la fonction np.roll() pour décaler les éléments du tableau xy d'une position vers le haut, de sorte que la première ville visite la deuxième, la deuxième visite la troisième, et ainsi de suite. Ensuite, elle calcule la distance entre chaque paire de villes consécutives, puis somme ces distances pour obtenir la distance totale parcourue.
         return distance # la distance totale calculée comme mesure de fitness de l'individu.
-
+    
     # Fonction de sélection des parents basée sur la fitness
     def selection_parents(self, population, fitness_population):
         # Définissez le nombre de parents à sélectionner
@@ -195,56 +198,63 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
         return nouveaux_individus
     
     def run_algorithm(self,population, fitness_population):
+        # Initialisation du texte affichant le numéro d'itération
+        iteration_text = self.canvas.create_text(200, 20, text="Iteration: 0", anchor="center")
+
         # Initialiser la population et calculer la fitness initiale
-        population_init = population
         fitness_population_init = fitness_population
 
         # Initialiser les variables pour la boucle d'évolution
-        num_iterations = 100  # Nombre maximal d'itérations
+        num_iterations = 10  # Nombre maximal d'itérations
         iteration = 0
         Seuil_Amelioration  = 1e-5  # Seuil d'amélioration de la fitness
          # Entrer dans la boucle d'évolution
         while iteration < num_iterations:
             # Sélectionner les parents en fonction de leur fitness
-            parents_selectionnes = self.selection_parents(population_init, fitness_population_init)
+            parents_selectionnes = self.selection_parents(population, fitness_population_init)
 
             # Effectuer le croisement et la mutation pour créer de nouveaux individus
             nouveaux_individus = self.croisement_mutation(parents_selectionnes, Pc, Pm)
 
 #       5     Ajout des nouveaux individus dans la population :
-
-
             # Ajouter les nouveaux individus à la population
-            population_init.extend(nouveaux_individus)
+            population.extend(nouveaux_individus)
 
             # Calculer la fitness de la nouvelle population
-            fitness_nouvelle_population = [self.fitness(individu) for individu in population_init]
-            fitness_population_init=fitness_nouvelle_population
+            fitness_nouvelle_population = [self.fitness(individu) for individu in population]
 
-            # modifier la liste des chemin pour les dessiner 
-            #chemins_population = []
-            #for individu in population:
-            #    chemins_population.append(np.copy(chemin))
-                
             # Mettre à jour l'affichage des résultats dans l'interface graphique (à implémenter)
-            self.update_graph(population_init)
+            self.update_population_graph(population)
 
     
             # Vérifier si le critère d'arrêt est atteint
             if self.check_convergence(fitness_population, fitness_nouvelle_population, Seuil_Amelioration):
                 break
 
+             #               Trier les individus en fonction de leur fitness
+            population_triee = [x for _, x in sorted(zip(fitness_population, population))]
+
             # Mettre à jour la population et la fitness pour la prochaine itération
             population = population[:M]  # Garder seulement les M meilleurs individus
             fitness_population = fitness_nouvelle_population
             iteration += 1
+            # Mettre à jour le texte affichant le numéro d'itération
+            self.canvas.itemconfig(iteration_text, text="Iteration: " + str(iteration))
 
         # Afficher les résultats finaux dans l'interface graphique (à implémenter)
+
 
 root = tk.Tk()
 app = TSPApp(root)
 app.run_algorithm(population, fitness_population)
+#app.update_population_graph(population)
+
 root.mainloop()
+
+            
+
+
+
 
             
 
