@@ -8,9 +8,33 @@ from tkinter import messagebox
 
 Pc=0.8 # taux de croisement
 Pm=0.001 # taux de mutation
-N=100# NOMBRE DE VILLES
-M=100 # DIMENSION DE LA POPULATION
-k=0 #compteur pour la boucle apres
+root = tk.Tk()
+root.withdraw()  # Cacher la fenêtre principale
+# Demander à l'utilisateur le nombre de villes à générer
+#simpledialog.askinteger("Nombre de villes", "Entrez le nombre de villes à générer :")
+while True:
+        try:
+            num_cities = int(simpledialog.askstring("Nombre de villes", "Entrez le nombre de villes à générer :"))
+            if num_cities > 0:
+                N= num_cities
+                break
+            else:
+                messagebox.showerror("Erreur", "Veuillez entrer un nombre entier positif.")
+        except ValueError:
+            messagebox.showerror("Erreur", "Veuillez entrer un nombre entier.")
+# NOMBRE DE VILLES
+ # DIMENSION DE LA POPULATION
+while True:
+        try:
+            dimension_population = int(simpledialog.askstring("Dimension population", "Entrez la Dimension de la population :"))
+            if dimension_population > 0:
+                M= dimension_population
+                break
+            else:
+                messagebox.showerror("Erreur", "Veuillez entrer un nombre entier positif.")
+        except ValueError:
+            messagebox.showerror("Erreur", "Veuillez entrer un nombre entier.")
+#k=0 #compteur pour la boucle apres
 villes_dessinees = False  # Variable globale pour suivre si les villes ont été dessinées ou non
 
 
@@ -39,7 +63,7 @@ chemin = np.arange(N)#crée un tableau NumPy contenant une séquence de nombres 
 
                   #         1     determiner la population initiale et le calcul de la fitness sur cette population
 
-
+print('\n\n\n           MA POPULATION INITIAL ou chaque element et ca fitness calculer : \n\n\n  ')
 population =[]  # une liste de listes représentant la population d'individus. Chaque individu est lui-même une liste représentant un chemin à travers les villes.la population c'est un ensmble de chromosome (on a 100) et chaque chromosome a 100 genes == on utilise une matrice
 for i in range(0,M,1) : # iterer avec i de 0 a M en avancant de 1
     #iniialiser la matrice : 
@@ -61,9 +85,10 @@ for i in range(0,M,1) : # iterer avec i de 0 a M en avancant de 1
         population[i][j]=element
         chemin[j]= population[i][j]
         d=fitness()
-    print('chromosome mmmmm',i, population[i],'fitness = ', d)
+    print('chromosome numero ',i+1, population[i],'fitness = ', d)
 
 # Calcul de fitness_population
+print('\n\n\n           la FITNESS DE MA POPULATION INITIAL : \n\n\n  ')
 fitness_population = []
 for individu in population:
     chemin = individu
@@ -79,15 +104,11 @@ population_trier_fitness = list(zip(fitness_population, population))# Création 
 population_trier_fitness.sort(key=lambda x: x[0])# Tri de la population en fonction de la fitness
 fitness_population = list(fitness for fitness, _ in population_trier_fitness)# Séparation de la population triée et des fitness triées
 population = list(individu for _, individu in population_trier_fitness)
+print('\n\n\n           A CHAQUE FOIS JE TRIE MA FITNESSE POUR POUVOIR SELECTIONNER LES MEILLEUR INDIVIDUE POUR LE PROCHZINE CROISEMENT  : \n\n\n  ')
 print(fitness_population) #test pour voir la fitness de la population
 
-#verification si vraiment les genration change
-print('Generation ', 0)
-for i in range(0,M,1) :
-    for j in range(0,N,1) :
-        chemin[j]= population[i][j]
-        d=fitness()
-    print('chromosome mmmmm',i, population[i],'fitness = ', d)
+
+
 
 
                             #     interface graphique
@@ -98,26 +119,20 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
         self.master = master
         master.title("Problème du Voyageur de Commerce")
 
-        self.canvas = tk.Canvas(master, width=400, height=400) # zone de dessin) dans la fenêtre principale 
-        self.canvas.pack() # affichons le canevas dans la fenêtre principale.
+        self.canvas = tk.Canvas(master, width=400, height=400) # zone de dessin) dans la fenêtre principale
+        self.canvas.pack(fill=tk.BOTH, expand=True)  # affichons le canevas dans la fenêtre principale. canevas se redimensionne avec la fenêtre
 
         #self.generate_button = tk.Button(master, text="Générer Villes", command=self.update_population_graph)
         #self.generate_button.pack()
 
         #self.run_button = tk.Button(master, text="Run Algorithme", command=self.run_algorithm)
-        #self.run_button.pack()
+        #self.run_button.pack(fill=tk.BOTH, expand=True)
 
         # Initialisation du texte affichant le numéro d'itération aligné à gauche
         self.iteration_text = self.canvas.create_text(10, 10, text="Iteration: 0", anchor="w")
         # Initialisation du texte affichant le meilleur individu aligné à droite à côté du premier texte
         #self.iteration_meilleur_individu = self.canvas.create_text(20, 20, text="meilleur individu : 0 ", anchor="e")
-
-
-    def get_num_cities_from_user(self): # demander a l'utilisateur de donner le nombre de villes a generer 
-        global N
-        N = simpledialog.askinteger("Nombre de villes", "Entrez le nombre de villes à générer :", initialvalue=10)
-        return N if N else 10  # Retourne le nombre de villes saisi par l'utilisateur, ou 10 par défaut
-
+        
     def update_population_graph(self, population, index=0):
         global villes_dessinees
         if index < len(population):
@@ -130,9 +145,13 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
             # Dessiner les nouvelles villes uniquement lors du premier appel
             if not villes_dessinees:
                 #num_cities = self.get_num_cities_from_user()  # Obtenir le nombre de villes à générer de l'utilisateur
-                for i in range(len(chemin) - 1):
+                for i in range(len(chemin)):
                     x_coord, y_coord = x[i]*400, y[i]*400
-                    self.canvas.create_oval(x_coord-3, y_coord-3, x_coord+3, y_coord+3, fill="blue", tags="villes")
+                    # Dessiner le cercle
+                    rayon = 15
+                    self.canvas.create_oval(x_coord-rayon, y_coord-rayon, x_coord+rayon, y_coord+rayon, fill="white", tags="villes")
+                    # Afficher le numéro de la ville à l'intérieur du cercle
+                    self.canvas.create_text(x_coord, y_coord, text=str(i), fill="black", tags="villes_text")
                 villes_dessinees = True  # Mettre à jour la variable de suivi
                  
 
@@ -151,8 +170,7 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
             self.canvas.create_line(x1, y1, x2, y2, fill="blue", width=2, tags="chemins")
 
             # Appeler cette méthode avec un délai entre chaque appel
-            self.master.after(100, self.update_population_graph, population, index + 1)
-
+            self.master.after(200, self.update_population_graph, population, index + 1)
         
     def check_convergence(self, fitness_population, fitness_nouvelle_population, Seuil_Amelioration):
         # Calculer la différence entre les fitness de la population actuelle et de la nouvelle population
@@ -188,6 +206,29 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
 
                 #       4         Création de nouveaux individus : crossover + mutation
 
+    def verifier_redondance(self, chemin):
+        villes_visitees = set()  # Utiliser un ensemble pour stocker les villes visitées
+        chemin_sans_redondance = []  # Initialiser le chemin sans redondance
+
+        for ville in chemin:
+            if ville not in villes_visitees:
+                chemin_sans_redondance.append(ville)
+                villes_visitees.add(ville)
+            else:
+                # Trouver une ville non visitée
+                nouvelle_ville = self.trouver_ville_non_visitee(villes_visitees)
+                chemin_sans_redondance.append(nouvelle_ville)
+                villes_visitees.add(nouvelle_ville)
+
+        return chemin_sans_redondance
+
+    def trouver_ville_non_visitee(self, villes_visitees):
+        # Trouver une ville non visitée en vérifiant chaque ville possible
+        for ville in range(N):
+            if ville not in villes_visitees:
+                return ville
+        return -1  # Si toutes les villes sont visitées, retourner -1 ou une autre valeur indiquant l'erreur
+
     # Fonction de croisement (crossover) et mutation
     def croisement_mutation(self, parents_selectionnes, Pc, Pm):
         nouveaux_individus = []   # stocker les nouveaux individus créés.
@@ -203,6 +244,10 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
                 enfant1 = parent1[:point_de_croisement] + parent2[point_de_croisement:]
                 enfant2 = parent2[:point_de_croisement] + parent1[point_de_croisement:]
 
+                # Vérification des redondances pour l'enfant 1
+                enfant1 = self.verifier_redondance(enfant1)
+                # Vérification des redondances pour l'enfant 2
+                enfant2 = self.verifier_redondance(enfant2)
                     # Mutation
                 # Mutation de l'enfant 1  # chaque enfant subit une mutation avec une probabilité Pm Pour chaque enfant, deux positions sont choisies aléatoirement et les villes correspondantes sont échangées
                 if np.random.rand() < Pm: # nombres aléatoires  dans l'intervalle [0, 1)         
@@ -220,14 +265,49 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
         
         return nouveaux_individus
     
+    def affichage_results(self, best_individual,fitness, generation):
+        # Créer une nouvelle fenêtre pour afficher les résultats
+        root = tk.Tk()
+        root.title("Résultats TSP")
+
+        label = tk.Label(root, text=f"Meilleur individu trouvé à la génération {generation} : {best_individual}")
+        label.pack()
+
+        label = tk.Label(root, text=f"la fitness  : {fitness}")
+        label.pack()
+
+        button = tk.Button(root, text="Fermer", command=root.destroy)
+        button.pack()
+
+        root.mainloop()
+
+    def element_deja_present(self, nouveaux_individus, population):
+        """
+        Vérifie si un élément est déjà présent dans la population.
+        
+        les Arguments:
+            element: L'élément à vérifier.
+            population: La population à parcourir.
+            
+        retour :
+            True si l'élément est présent dans la population, False sinon.
+        """
+        elements_present = []
+        for element in nouveaux_individus:
+            element_present = any(individu == element for individu in population)
+            elements_present.append(element_present)
+        return elements_present
+
+
     def run_algorithm(self,population):
         global fitness_population
         # Initialiser les variables pour la boucle d'évolution
-        num_iterations = 50  # Nombre maximal d'itérations  
+        num_iterations = 1000  # Nombre maximal d'itérations  
         iteration = 0
         Seuil_Amelioration  = 1e-5  # Seuil d'amélioration de la fitness
          # Entrer dans la boucle d'évolution
         #self.update_population_graph(population)
+        print('\n\n\n           Application de l ALGORITHME GENTIQUE  : \n\n\n  ')
         while iteration < num_iterations:
             
             # Sélectionner les parents en fonction de leur fitness
@@ -235,11 +315,13 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
 
             # Effectuer le croisement et la mutation pour créer de nouveaux individus
             nouveaux_individus = self.croisement_mutation(parents_selectionnes, Pc, Pm)
-
+            print(nouveaux_individus)
 #       5     Ajout des nouveaux individus dans la population :
             # Ajouter les nouveaux individus à la population
-            population.extend(nouveaux_individus)
+            nouveaux_individus_non_present = [individu for individu in nouveaux_individus 
+                                          if not any(individu == element for element in population)]
 
+            population.extend(nouveaux_individus_non_present)
             # Calculer la fitness de la nouvelle population
             fitness_nouvelle_population = [self.fitness(individu) for individu in population]
 
@@ -274,17 +356,20 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
             self.master.after(1000, self.run_algorithm, population, fitness_population, iteration + 1)  # 1000 millisecondes = 1 seconde
 
             #verification si vraiment les genration change
-            print('Generation ', iteration)
+            print('\n\n      Generation ', iteration)
             for i in range(0,M,1) :
                 print('chromosome mmmmm',i, population[i],'fitness = ', fitness_population[i])
 
             # Appeler la prochaine itération après un délai
-            #self.master.after(1000, self.run_algorithm, population, fitness_population, iteration + 1)  # 1000 millisecondes = 1 seconde
+            self.master.after(1000, self.run_algorithm, population, fitness_population, iteration + 1)  # 1000 millisecondes = 1 seconde
         #self.canvas.itemconfig(self.iteration_text, text="meilleur individu : " + str(fitness_population[0]))
         # Afficher les résultats finaux dans l'interface graphique (à implémenter)
+
         print('Generation finale :  ', iteration)
         for i in range(0,M,1) :
             print('chromosome : ',i, population[i],'fitness = ', fitness_population[i])
+        
+        self.affichage_results(population[0],fitness_population[0], num_iterations )
 
 
 root = tk.Tk()
@@ -293,6 +378,11 @@ app.run_algorithm(population)
 #app.update_population_graph(population)
 
 root.mainloop()#pour démarrer la boucle principale de l'interface graphique.
+
+            
+
+
+
 
             
 
