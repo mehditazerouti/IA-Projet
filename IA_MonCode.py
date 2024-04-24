@@ -50,7 +50,16 @@ def fitness():# calcule la distance totale parcourue en suivant le chemin repré
     xy=np.column_stack((x[chemin],y[chemin])) # Cette ligne crée un tableau bidimensionnel où chaque ligne représente les coordonnées (x, y) d'une ville dans l'ordre défini par le chemin actuel. La fonction np.column_stack() est utilisée pour empiler les tableaux x et y sur les colonnes, de sorte que chaque colonne contienne les coordonnées (x, y) d'une ville.
     distance=np.sum(np.sqrt(np.sum((xy- np.roll(xy,-1,axis=0))**2,axis=1))) # alcule la distance totale parcourue en suivant le chemin défini par les indices de la variable chemin. Elle utilise la fonction np.roll() pour décaler les éléments du tableau xy d'une position vers le haut, de sorte que la première ville visite la deuxième, la deuxième visite la troisième, et ainsi de suite. Ensuite, elle calcule la distance entre chaque paire de villes consécutives, puis somme ces distances pour obtenir la distance totale parcourue.
     return distance # la distance totale calculée comme mesure de fitness de l'individu.
-
+"""J'ai défini une fonction pour calculer la distance entre deux villes. 
+J'ai utilisé une formule de distance, telle que la distance euclidienne 
+dans un espace bidimensionnel, car mes villes sont représentées par des coordonnées.
+J'ai utilisé cette fonction pour calculer la distance totale parcourue par chaque individu dans la population.
+J'ai noté que plus la distance est courte, meilleure est la fitness de l'individu. J'ai donc inversé la distance 
+(par exemple, en prenant l'inverse de la distance) pour obtenir un score de fitness où une valeur plus élevée indique
+ une meilleure adaptation.
+J'ai attribué à chaque individu son score de fitness calculé.
+J'ai répété ce processus pour tous les individus de la population.
+"""
 
 
 #+++++++
@@ -121,9 +130,6 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
 
         self.canvas = tk.Canvas(master, width=400, height=400) # zone de dessin) dans la fenêtre principale
         self.canvas.pack(fill=tk.BOTH, expand=True)  # affichons le canevas dans la fenêtre principale. canevas se redimensionne avec la fenêtre
-
-        #self.generate_button = tk.Button(master, text="Générer Villes", command=self.update_population_graph)
-        #self.generate_button.pack()
 
         #self.run_button = tk.Button(master, text="Run Algorithme", command=self.run_algorithm)
         #self.run_button.pack(fill=tk.BOTH, expand=True)
@@ -270,7 +276,7 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
         root = tk.Tk()
         root.title("Résultats TSP")
 
-        label = tk.Label(root, text=f"Meilleur individu trouvé à la génération {generation} : {best_individual}")
+        label = tk.Label(root, text=f"Meilleur individu trouvé à la génération {generation} trvaverse les villes avec cette ordre la : {best_individual}")
         label.pack()
 
         label = tk.Label(root, text=f"la fitness  : {fitness}")
@@ -365,10 +371,10 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
         #self.canvas.itemconfig(self.iteration_text, text="meilleur individu : " + str(fitness_population[0]))
         # Afficher les résultats finaux dans l'interface graphique (à implémenter)
 
-        print('Generation finale :  ', iteration)
+        print('\n\n\n   Generation finale :  ', iteration)
         for i in range(0,M,1) :
             print('chromosome : ',i, population[i],'fitness = ', fitness_population[i])
-        
+        print('Meilleur individu(chromosome) trouvé : ',i, population[0],'ca est fitness = ', fitness_population[0],'\n\n\n\n\n\n')
         self.affichage_results(population[0],fitness_population[0], num_iterations )
 
 
@@ -380,11 +386,4 @@ app.run_algorithm(population)
 root.mainloop()#pour démarrer la boucle principale de l'interface graphique.
 
             
-
-
-
-
-            
-
-
 
