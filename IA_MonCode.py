@@ -7,7 +7,7 @@ from tkinter import messagebox
 
 
 Pc=0.8 # taux de croisement
-Pm=0.001 # taux de mutation
+Pm=0.01 # taux de mutation
 root = tk.Tk()
 root.withdraw()  # Cacher la fenêtre principale
 # Demander à l'utilisateur le nombre de villes à générer
@@ -177,7 +177,8 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
 
             # Appeler cette méthode avec un délai entre chaque appel
             self.master.after(200, self.update_population_graph, population, index + 1)
-        
+    
+    #pour voir si l'algo a un certain moment cert plus et avance plus
     def check_convergence(self, fitness_population, fitness_nouvelle_population, Seuil_Amelioration):
         # Calculer la différence entre les fitness de la population actuelle et de la nouvelle population
         difference_fitness = abs(sum(fitness_population) - sum(fitness_nouvelle_population))
@@ -203,7 +204,7 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
         # Définissez le nombre de parents à sélectionner
         taille_population = len(population)  # Taille de la population
         # Calcul du nombre de parents
-        nombre_parents = int(taille_population * Pc )# taille_population*taux de croisement
+        nombre_parents = int(taille_population * Pc)# taille_population*taux de croisement
         #indices_ordres = sorted(range(len(fitness_population)), key=lambda k: fitness_population[k])
         parents = population[:nombre_parents]
         #parents = [population[i] for i in indices_parents]
@@ -211,7 +212,7 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
     
 
                 #       4         Création de nouveaux individus : crossover + mutation
-
+    #pour verifier si l'individu a deja visite une ville 
     def verifier_redondance(self, chemin):
         villes_visitees = set()  # Utiliser un ensemble pour stocker les villes visitées
         chemin_sans_redondance = []  # Initialiser le chemin sans redondance
@@ -286,7 +287,7 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
         button.pack()
 
         root.mainloop()
-
+# je ne l'ai pas utiliser plutardrrrrrr
     def element_deja_present(self, nouveaux_individus, population):
         """
         Vérifie si un élément est déjà présent dans la population.
@@ -308,7 +309,7 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
     def run_algorithm(self,population):
         global fitness_population
         # Initialiser les variables pour la boucle d'évolution
-        num_iterations = 1000  # Nombre maximal d'itérations  
+        num_iterations = 1000  # Nombre maximal d'itérations == generation 
         iteration = 0
         Seuil_Amelioration  = 1e-5  # Seuil d'amélioration de la fitness
          # Entrer dans la boucle d'évolution
@@ -332,8 +333,8 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
             fitness_nouvelle_population = [self.fitness(individu) for individu in population]
 
             # Vérifier si le critère d'arrêt est atteint
-            if self.check_convergence(fitness_population, fitness_nouvelle_population, Seuil_Amelioration):
-                break
+            #if self.check_convergence(fitness_population, fitness_nouvelle_population, Seuil_Amelioration):
+                #break
             fitness_population = fitness_nouvelle_population
 
             #####(marche bien )la population trier selon la fitness
@@ -376,6 +377,11 @@ class TSPApp:      # j'ai difinis une classe appelée TSPApp pour mon applicatio
             print('chromosome : ',i, population[i],'fitness = ', fitness_population[i])
         print('Meilleur individu(chromosome) trouvé : ',i, population[0],'ca est fitness = ', fitness_population[0],'\n\n\n\n\n\n')
         self.affichage_results(population[0],fitness_population[0], num_iterations )
+        # À la fin de votre méthode run_algorithm, créez une nouvelle population contenant uniquement le meilleur individu pour l'afficher seul
+        #best_individual = population[0]
+        #best_population = [best_individual]    
+        # Appelez la méthode update_population_graph avec cette population contenant uniquement le meilleur individu
+        #self.update_population_graph(best_population)
 
 
 root = tk.Tk()
@@ -384,6 +390,11 @@ app.run_algorithm(population)
 #app.update_population_graph(population)
 
 root.mainloop()#pour démarrer la boucle principale de l'interface graphique.
+
+            
+
+
+
 
             
 
